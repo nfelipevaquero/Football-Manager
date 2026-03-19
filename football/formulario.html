@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario</title>
+    <link rel="stylesheet" href="./footballCSS.css">
+
+</head>
+<body>
+  <header id="main-header"></header>
+
+<h1>Registro de Personal</h1>
+
+<div class="formulario">
+    <label for="nombre">Nombre</label>
+    <input type="text" name="nombre" id="nombre" placeholder="Ej. Hansi">
+
+    <label for="apellido">Apellido</label>
+    <input type="text" name="apellido" id="apellido" placeholder="Ej. Flick">
+
+    <label for="peso">Peso (Kg)</label>
+    <input type="number" name="peso" id="peso" placeholder="Ej. 80kg" min="0" step="0.1">
+
+    <label for="altura">Altura (Cm)</label>
+    <input type="number" name="altura" id="altura" placeholder="Ej. 1.80cm" min="0" step="1">
+
+   <label for="fecha-nacimiento">Fecha de Nacimiento</label>
+    <input type="date" id="fecha-nacimiento" name="fecha-nacimiento" required>
+
+    <label for="foto">Fotografía</label>
+    <input type="file" id="foto" name="foto" accept="image/*">
+    <div id="preview-container" class="ocultar">
+        <img id="foto-preview" src="" alt="Vista previa">
+    </div>
+
+    <label for="tipo">Jugador o Entrenador</label>
+    <select id="tipo" name="tipo" required>
+        <option value="" disabled selected>Selecciona una opción</option>
+        <option value="Jugador">Jugador</option>
+        <option value="Entrenador">Entrenador</option>
+    </select>
+
+    <div id="contenedor-posicion" class="ocultar">
+        <label for="posicion">Posicion</label>
+        <select name="posicion" id="posicion">
+            <option value="" disabled selected>Seleciona una posición</option>
+            <option value="POR">POR</option>
+            <option value="DFC">DFC</option>
+            <option value="LI">LI</option>
+            <option value="LD">LD</option>
+            <option value="MCD">MCD</option>
+            <option value="MC">MC</option>
+            <option value="MCO">MCO</option>
+            <option value="EI">EI</option>
+            <option value="ED">ED</option>
+            <option value="DC">DC</option>
+        </select>
+    </div>
+
+        <label for="equipo">Equipo</label>
+    <select id="equipo" name="equipo" required>
+        <option value="" disabled selected>Seleccionando equipos...</option>
+    </select>
+
+
+    <label for="telefono">Teléfono (Formato: 123-456-789)</label>
+    <input type="tel" id="telefono" name="telefono" pattern="[0-9]{3}-[0-9]{3}-[0-9]{3}" placeholder="123-456-789">
+
+    <button type="submit">Enviar</button>
+</div>
+
+<div id="main-footer"></div>
+    <script src="1.js"></script>
+</body>
+</html>
