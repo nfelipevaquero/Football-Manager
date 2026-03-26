@@ -17,7 +17,7 @@ if (contenedorEquipos) {
             
             let filasJugadores = equipo.jugadors.map(j => `<tr><td>${j.dorsal}</td><td>${j.nomPersona}</td><td>${j.posicio}</td><td class="calidad">${j.qualitat}</td></tr>`).join('');
 
-            card.innerHTML = `<div class="info-principal"><img class="escudo-equipo" src="./escudos/${equipo.equip}.png" onerror="this.src='./escudos/FC_Barcelona.png'"><h2 class="nombre-equipo">${equipo.equip}</h2><img class="foto-dt" src="./entrenadores/${equipo.entrenador.nomPersona}.png" onerror="this.src='./escudos/defecto.png'"><p>DT: ${equipo.entrenador.nomPersona}</p></div><div class="tabla-oculta"><table><thead><tr><th>#</th><th>Nombre</th><th>Pos.</th><th>Val.</th></tr></thead><tbody>${filasJugadores}</tbody></table></div>`;
+            card.innerHTML = `<div class="info-principal"><img class="escudo-equipo" src="./escudos/${equipo.equip}.png" onerror="this.src='./escudos/FC_Barcelona.png'"><h2 class="nombre-equipo">${equipo.equip}</h2><img class="foto-dt" src="./entrenadores/${equipo.entrenador.nomPersona}.png" onerror="this.src='./escudos/FC BARCELONA.png'"><p>DT: ${equipo.entrenador.nomPersona}</p></div><div class="tabla-oculta"><table><thead><tr><th>#</th><th>Nombre</th><th>Pos.</th><th>Val.</th></tr></thead><tbody>${filasJugadores}</tbody></table></div>`;
             contenedorEquipos.appendChild(card);
         });
     }).catch(err => console.error("Error equipos:", err));
@@ -40,7 +40,7 @@ if (contenedorPartido) {
             const fecha = fObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
             const hora = fObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
-            fila.innerHTML = `<div class="col-info"><span class="fecha">${fecha}</span><span class="hora">${hora}</span></div><div class="col-equipo local"><span>${p.equip_local.nom}</span><img src="./escudos/${p.equip_local.nom}.png" onerror="this.src='./escudos/defecto.png'"></div><div class="col-score">${p.resultat}</div><div class="col-equipo visitante"><img src="./escudos/${p.equip_visitant.nom}.png" onerror="this.src='./escudos/defecto.png'"><span>${p.equip_visitant.nom}</span></div><div class="col-status">FINALIZADO</div>`;
+            fila.innerHTML = `<div class="col-info"><span class="fecha">${fecha}</span><span class="hora">${hora}</span></div><div class="col-equipo local"><span>${p.equip_local.nom}</span><img src="./escudos/${p.equip_local.nom}.png" onerror="this.src='./escudos/FC BARCELONA.png'"></div><div class="col-score">${p.resultat}</div><div class="col-equipo visitante"><img src="./escudos/${p.equip_visitant.nom}.png" onerror="this.src='./escudos/FC BARCELONA.png'"><span>${p.equip_visitant.nom}</span></div><div class="col-status">FINALIZADO</div>`;
             tabla.appendChild(fila);
         });
         contenedorPartido.appendChild(tabla);
