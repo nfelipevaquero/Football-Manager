@@ -1,187 +1,149 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./footballCSS.css">
-    <title>vanguarda football</title>
-    <link rel="icon" type="image/png" href="fotos/football.png">
-</head>
-<body>
-    
-    <header id="main-header">
-    </header>
-<h2 class="main-title">Jugadores Destacados</h2>
-<div class="jugadores_destacados" id="destacados">
-    
-    <div class="tarjeta-jugador">
-        <div class="image-container avatar-pulse">
-            <img src="./jugadores/mbappe.jpg" alt="Kylian Mbappé">
-            <span class="posicion">DC</span>
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="info-jugador">
-            <div class="nombre">Kylian Mbappé</div>
-            <div class="apodo">"Donatello"</div>
-        </div>
-    </div>
+// ==========================================
+// 1. CARGAR HEADER Y FOOTER
+// ==========================================
+fetch('header.html').then(res => res.text()).then(data => { 
+    const h = document.getElementById('main-header'); 
+    if (h) h.innerHTML = data; 
+}).catch(e => console.error('Error header:', e));
 
-    <div class="tarjeta-jugador">
-        <div class="image-container avatar-pulse">
-            <img src="./jugadores/harry.jpg" alt="Harry Kane">
-            <span class="posicion">DC</span>
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="info-jugador">
-            <div class="nombre">Harry Kane</div>
-            <div class="apodo">"Hurricane"</div>
-        </div>
-    </div>
+fetch('footer.html').then(res => res.text()).then(data => { 
+    const f = document.getElementById('main-footer'); 
+    if (f) f.innerHTML = data; 
+}).catch(e => console.error('Error footer:', e));
 
-    <div class="tarjeta-jugador">
-        <div class="image-container avatar-pulse">
-            <img src="./jugadores/yamal.jpg" alt="Lamine Yamal">
-            <span class="posicion">ED</span>
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="info-jugador">
-            <div class="nombre">Lamine Yamal</div>
-            <div class="apodo">"La Perla"</div>
-        </div>
-    </div>
+// ==========================================
+// 2. CARGAR EQUIPOS Y ENTRENADORES (consulta.html)
+// ==========================================
+const contenedorEquipos = document.getElementById('lista-equipos');
+if (contenedorEquipos) {
+    fetch('jugadors.json').then(res => res.json()).then(equipos => {
+        equipos.forEach(equipo => {
+            const card = document.createElement('div');
+            const claseEquipo = equipo.equip.toLowerCase().replace(/\s+/g, '-');
+            card.className = `card-equipo has-gradient ${claseEquipo}`;
+            
+            let filasJugadores = equipo.jugadors.map(j => 
+                `<tr><td>${j.dorsal}</td><td>${j.nomPersona}</td><td>${j.posicio}</td><td class="calidad">${j.qualitat}</td></tr>`
+            ).join('');
 
-    <div class="tarjeta-jugador">
-        <div class="image-container avatar-pulse">
-            <img src="./jugadores/haaland.jpg" alt="Erling Haaland">
-            <span class="posicion">DC</span>
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="info-jugador">
-            <div class="nombre">Erling Haaland</div>
-            <div class="apodo">"Cyborg"</div>
-        </div>
-    </div>
+            // CORRECCIÓN DE RUTA: encodeURIComponent para manejar espacios y tildes
+            const rutaEscudo = `./escudos/${encodeURIComponent(equipo.equip)}.png`;
+            const rutaDT = `./entrenadores/${encodeURIComponent(equipo.entrenador.nomPersona)}.png`;
 
-    <div class="tarjeta-jugador">
-        <div class="image-container avatar-pulse">
-            <img src="./jugadores/dembele.jpg" alt="Ousmane Dembélé">
-            <span class="posicion">ED</span>
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="info-jugador">
-            <div class="nombre">Ousmane Dembélé</div>
-            <div class="apodo">"El Mosquito"</div>
-        </div>
-    </div>
+            card.innerHTML = `
+                <div class="info-principal">
+                    <img class="escudo-equipo" 
+                         src="${rutaEscudo}" 
+                         onerror="this.onerror=null; this.style.display='none';">
+                    <h2 class="nombre-equipo">${equipo.equip}</h2>
+                    <img class="foto-dt" 
+                         src="${rutaDT}" 
+                         onerror="this.onerror=null; this.style.display='none';">
+                    <p>DT: ${equipo.entrenador.nomPersona}</p>
+                </div>
+                <div class="tabla-oculta">
+                    <table>
+                        <thead>
+                            <tr><th>#</th><th>Nombre</th><th>Pos.</th><th>Val.</th></tr>
+                        </thead>
+                        <tbody>${filasJugadores}</tbody>
+                    </table>
+                </div>`;
+            contenedorEquipos.appendChild(card);
+        });
+    }).catch(err => console.error("Error equipos:", err));
+}
 
-    <div class="tarjeta-jugador">
-        <div class="image-container avatar-pulse">
-            <img src="./jugadores/vitinha.jpg" alt="Vitinha">
-            <span class="posicion">MCO</span>
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="info-jugador">
-            <div class="nombre">Vitinha</div>
-            <div class="apodo">"El Mago"</div>
-        </div>
-    </div>
+// ==========================================
+// 3. CARGAR RESULTADOS DE PARTIDOS (resultat.html)
+// ==========================================
+const contenedorPartido = document.getElementById('contenedor-partidos');
+if (contenedorPartido) {
+    fetch('FM_partits_masc.json').then(res => res.json()).then(partidos => {
+        contenedorPartido.innerHTML = '<h2 class="main-title">Marcadores de la Jornada</h2>';
+        const tabla = document.createElement('div');
+        tabla.className = 'tabla-resultados';
 
-    <div class="tarjeta-jugador">
-        <div class="image-container avatar-pulse">
-            <img src="./jugadores/luis diaz.jpg" alt="Luis Díaz">
-            <span class="posicion">EI</span>
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="info-jugador">
-            <div class="nombre">Luis Díaz</div>
-            <div class="apodo">"Lucho"</div>
-        </div>
-    </div>
+        partidos.forEach(p => {
+            const fila = document.createElement('div');
+            fila.className = 'fila-partido';
+            const fObj = new Date(p.data);
+            const fecha = fObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+            const hora = fObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
-    <div class="tarjeta-jugador">
-        <div class="image-container avatar-pulse">
-            <img src="./jugadores/vinicius.jpg" alt="Vinícius Júnior">
-            <span class="posicion">EI</span>
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="info-jugador">
-            <div class="nombre">Vinícius Júnior</div>
-            <div class="apodo">"Vini"</div>
-        </div>
-    </div>
+            // CORRECCIÓN DE RUTA: encodeURIComponent aquí también
+            const escLocal = `./escudos/${encodeURIComponent(p.equip_local.nom)}.png`;
+            const escVis = `./escudos/${encodeURIComponent(p.equip_visitant.nom)}.png`;
 
-    <div class="tarjeta-jugador">
-        <div class="image-container avatar-pulse">
-            <img src="./jugadores/rice.jpg" alt="Declan Rice">
-            <span class="posicion">MCD</span>
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="info-jugador">
-            <div class="nombre">Declan Rice</div>
-            <div class="apodo">"The Engine"</div>
-        </div>
-    </div>
+            fila.innerHTML = `
+                <div class="col-info">
+                    <span class="fecha">${fecha}</span>
+                    <span class="hora">${hora}</span>
+                </div>
+                <div class="col-equipo local">
+                    <span>${p.equip_local.nom}</span>
+                    <img src="${escLocal}" onerror="this.onerror=null; this.style.visibility='hidden';">
+                </div>
+                <div class="col-score">${p.resultat}</div>
+                <div class="col-equipo visitante">
+                    <img src="${escVis}" onerror="this.onerror=null; this.style.visibility='hidden';">
+                    <span>${p.equip_visitant.nom}</span>
+                </div>
+                <div class="col-status">FINALIZADO</div>`;
+            tabla.appendChild(fila);
+        });
+        contenedorPartido.appendChild(tabla);
+    }).catch(err => console.error("Error partidos:", err));
+}
 
-    <div class="tarjeta-jugador">
-        <div class="image-container avatar-pulse">
-            <img src="./jugadores/messi.jpg" alt="Lionel Messi">
-            <span class="posicion">MCO</span>
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="info-jugador">
-            <div class="nombre">Lionel Messi</div>
-            <div class="apodo">"D10S"</div>
-        </div>
-    </div>
-</div>
+// ==========================================
+// 4. LÓGICA DEL FORMULARIO (Se mantiene igual)
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const selectTipo = document.getElementById('tipo');
+    const contenedorPosicion = document.getElementById('contenedor-posicion');
+    if (selectTipo && contenedorPosicion) {
+        selectTipo.addEventListener('change', function() {
+            if (this.value === 'Jugador') {
+                contenedorPosicion.classList.remove('ocultar');
+            } else {
+                contenedorPosicion.classList.add('ocultar');
+            }
+        });
+    }
 
-    <h2 class="main-title">Última Hora</h2>
+    const selectEquipo = document.getElementById('equipo');
+    const equiposList = [
+        "FC Barcelona", "Real Madrid CF", "Atletico de Madrid", 
+        "Sevilla FC", "Real Sociedad", "Real Betis", 
+        "Athletic Club", "Villarreal CF", "Valencia CF", 
+        "Girona FC", "RCD Espanyol", "Rayo Vallecano"
+    ];
+    if (selectEquipo) {
+        selectEquipo.innerHTML = '<option value="" disabled selected>Selecciona un equipo</option>';
+        equiposList.forEach(e => {
+            const opt = document.createElement('option');
+            opt.value = e;
+            opt.textContent = e;
+            selectEquipo.appendChild(opt);
+        });
+    }
 
-<div class="seccion-noticias">
-    <div class="card-noticia">
-        <div class="noticia-img" style="background-image: url('./fotos/bernabeu.png');"></div>
-        <div class="noticia-body">
-            <span class="tag">INTERNACIONAL</span>
-            <h3>La Finalissima apunta al Bernabéu</h3>
-            <p>El España-Argentina se jugará en Madrid. La decisión es total a falta de pequeños detalles de seguridad.</p>
-            <a href="https://as.com/futbol/internacional/la-finalissima-apunta-al-bernabeu-f202603-n/" class="leer-mas" target="_blank" rel="noopener noreferrer">Leer más →</a>
-        </div>
-    </div>
+    const inputFoto = document.getElementById('foto');
+    const previewContainer = document.getElementById('preview-container');
+    const previewImg = document.getElementById('foto-preview');
 
-    <div class="card-noticia">
-        <div class="noticia-img" style="background-image: url('./fotos/valverde.png');"></div>
-        <div class="noticia-body">
-            <span class="tag">REAL MADRID</span>
-            <h3>Fede Valverde: “Es el mejor partido de mi carrera”</h3>
-            <p>Tras su ‘hat trick’ al City, el uruguayo logra el primer triplete de su vida en su gran epopeya personal.</p>
-            <a href="https://elpais.com/deportes/futbol/2026-03-11/fede-valverde-es-el-mejor-partido-de-mi-carrera.html" class="leer-mas" target="_blank" rel="noopener noreferrer">Leer más →</a>
-        </div>
-    </div>
-
-    <div class="card-noticia">
-        <div class="noticia-img" style="background-image: url('./fotos/julian.png');"></div>
-        <div class="noticia-body">
-            <span class="tag">MERCADO</span>
-            <h3>El enigma Julián Álvarez</h3>
-            <p>Simeone confía en él, pero el interés del Barcelona y las dudas del argentino tras la Champions dejan su futuro abierto.</p>
-            <a href="https://www.elmundo.es/deportes/futbol/champions-league/2026/03/12/69b1b1fcfc6c83af788b4591.html" class="leer-mas" target="_blank" rel="noopener noreferrer">Leer más →</a>
-        </div>
-    </div>
-</div>
-
-
-<div id="main-footer"></div>
-<script src="1.js">
-</script>
-</body>
-</html>
+    if (inputFoto && previewImg) {
+        inputFoto.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewImg.src = event.target.result;
+                    if(previewContainer) previewContainer.classList.remove('ocultar');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
