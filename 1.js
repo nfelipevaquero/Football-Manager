@@ -1,25 +1,28 @@
 // ==========================================
 // 1. CARGAR HEADER Y FOOTER
 // ==========================================
-fetch('header.html').then(res => res.text()).then(data => { 
-    const h = document.getElementById('main-header'); 
-    if (h) h.innerHTML = data; 
-}).catch(e => console.error('Error header:', e));
+const cargarSeccion = (id, url) => {
+    fetch(url)
+        .then(res => res.text())
+        .then(data => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = data;
+        })
+        .catch(err => console.error("Error cargando " + url, err));
+};
 
-fetch('footer.html').then(res => res.text()).then(data => { 
-    const f = document.getElementById('main-footer'); 
-    if (f) f.innerHTML = data; 
-}).catch(e => console.error('Error footer:', e));
+cargarSeccion('main-header', 'header.html');
+cargarSeccion('main-footer', 'footer.html');
 
 // ==========================================
-// FUNCIÓN PARA LIMPIAR RUTAS DE ESCUDOS
-// GitHub prefiere nombres sin espacios ni tildes
+// FUNCIÓN PARA NORMALIZAR ESCUDOS (SÓLO ESCUDOS)
 // ==========================================
-function normalizarRutaEscudo(nombre) {
+function rutaEscudoLimpia(nombre) {
+    if (!nombre) return "";
+    // Convierte "Atlético de Madrid" -> "ATLETICO DE MADRID"
     return nombre.toUpperCase()
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "") // Quita tildes
-        .replace(/\s+/g, '%20');         // Mantiene el espacio codificado correctamente
+        .replace(/[\u0300-\u036f]/g, ""); 
 }
 
 // ==========================================
@@ -27,41 +30,42 @@ function normalizarRutaEscudo(nombre) {
 // ==========================================
 const contenedorEquipos = document.getElementById('lista-equipos');
 if (contenedorEquipos) {
-    fetch('jugadors.json').then(res => res.json()).then(equipos => {
-        equipos.forEach(equipo => {
-            const card = document.createElement('div');
-            const claseEquipo = equipo.equip.toLowerCase().replace(/\s+/g, '-');
-            card.className = `card-equipo has-gradient ${claseEquipo}`;
-            
-            let filasJugadores = equipo.jugadors.map(j => 
-                `<tr><td>${j.dorsal}</td><td>${j.nomPersona}</td><td>${j.posicio}</td><td class="calidad">${j.qualitat}</td></tr>`
-            ).join('');
+    fetch('jugadors.json')
+        .then(res => res.json())
+        .then(equipos => {
+            equipos.forEach(equipo => {
+                const card = document.createElement('div');
+                const claseEquipo = equipo.equip.toLowerCase().replace(/\s+/g, '-');
+                card.className = `card-equipo has-gradient ${claseEquipo}`;
+                
+                let filasJugadores = equipo.jugadors.map(j => 
+                    `<tr><td>${j.dorsal}</td><td>${j.nomPersona}</td><td>${j.posicio}</td><td class="calidad">${j.qualitat}</td></tr>`
+                ).join('');
 
-            // Escudos: En mayúsculas y normalizados
-            const rutaEscudo = `./escudos/${normalizarRutaEscudo(equipo.equip)}.PNG`;
-            // Entrenadores: Ruta original (sin forzar mayúsculas)
-            const rutaDT = `./entrenadores/${equipo.entrenador.nomPersona}.png`;
+                // Regla 1: Escudos en MAYÚSCULAS y .PNG
+                const srcEscudo = `./escudos/${rutaEscudoLimpia(equipo.equip)}.PNG`;
+                
+                // Regla 2: Entrenadores tal cual están en el JSON y .png
+                const srcDT = `./entrenadores/${equipo.entrenador.nomPersona}.png`;
 
-            card.innerHTML = `
-                <div class="info-principal">
-                    <img class="escudo-equipo" 
-                         src="${rutaEscudo}" 
-                         onerror="this.onerror=null; this.style.display='none';">
-                    <h2 class="nombre-equipo">${equipo.equip}</h2>
-                    <img class="foto-dt" 
-                         src="${rutaDT}" 
-                         onerror="this.onerror=null; this.style.display='none';">
-                    <p>DT: ${equipo.entrenador.nomPersona}</p>
-                </div>
-                <div class="tabla-oculta">
-                    <table>
-                        <thead><tr><th>#</th><th>Nombre</th><th>Pos.</th><th>Val.</th></tr></thead>
-                        <tbody>${filasJugadores}</tbody>
-                    </table>
-                </div>`;
-            contenedorEquipos.appendChild(card);
+                card.innerHTML = `
+                    <div class="info-principal">
+                        <img class="escudo-equipo" src="${srcEscudo}" 
+                             onerror="this.onerror=null; this.style.display='none';">
+                        <h2 class="nombre-equipo">${equipo.equip}</h2>
+                        <img class="foto-dt" src="${srcDT}" 
+                             onerror="this.onerror=null; this.style.display='none';">
+                        <p>DT: ${equipo.entrenador.nomPersona}</p>
+                    </div>
+                    <div class="tabla-oculta">
+                        <table>
+                            <thead><tr><th>#</th><th>Nombre</th><th>Pos.</th><th>Val.</th></tr></thead>
+                            <tbody>${filasJugadores}</tbody>
+                        </table>
+                    </div>`;
+                contenedorEquipos.appendChild(card);
+            });
         });
-    });
 }
 
 // ==========================================
@@ -69,37 +73,39 @@ if (contenedorEquipos) {
 // ==========================================
 const contenedorPartido = document.getElementById('contenedor-partidos');
 if (contenedorPartido) {
-    fetch('FM_partits_masc.json').then(res => res.json()).then(partidos => {
-        contenedorPartido.innerHTML = '<h2 class="main-title">Marcadores de la Jornada</h2>';
-        const tabla = document.createElement('div');
-        tabla.className = 'tabla-resultados';
+    fetch('FM_partits_masc.json')
+        .then(res => res.json())
+        .then(partidos => {
+            contenedorPartido.innerHTML = '<h2 class="main-title">Marcadores de la Jornada</h2>';
+            const tabla = document.createElement('div');
+            tabla.className = 'tabla-resultados';
 
-        partidos.forEach(p => {
-            const fila = document.createElement('div');
-            fila.className = 'fila-partido';
-            const fObj = new Date(p.data);
-            const fecha = fObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
-            const hora = fObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            partidos.forEach(p => {
+                const fila = document.createElement('div');
+                fila.className = 'fila-partido';
+                const fObj = new Date(p.data);
+                const fecha = fObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+                const hora = fObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
-            const escLocal = `./escudos/${normalizarRutaEscudo(p.equip_local.nom)}.PNG`;
-            const escVis = `./escudos/${normalizarRutaEscudo(p.equip_visitant.nom)}.PNG`;
+                const escLocal = `./escudos/${rutaEscudoLimpia(p.equip_local.nom)}.PNG`;
+                const escVis = `./escudos/${rutaEscudoLimpia(p.equip_visitant.nom)}.PNG`;
 
-            fila.innerHTML = `
-                <div class="col-info"><span class="fecha">${fecha}</span><span class="hora">${hora}</span></div>
-                <div class="col-equipo local">
-                    <span>${p.equip_local.nom}</span>
-                    <img src="${escLocal}" onerror="this.onerror=null; this.style.visibility='hidden';">
-                </div>
-                <div class="col-score">${p.resultat}</div>
-                <div class="col-equipo visitante">
-                    <img src="${escVis}" onerror="this.onerror=null; this.style.visibility='hidden';">
-                    <span>${p.equip_visitant.nom}</span>
-                </div>
-                <div class="col-status">FINALIZADO</div>`;
-            tabla.appendChild(fila);
+                fila.innerHTML = `
+                    <div class="col-info"><span class="fecha">${fecha}</span><span class="hora">${hora}</span></div>
+                    <div class="col-equipo local">
+                        <span>${p.equip_local.nom}</span>
+                        <img src="${escLocal}" onerror="this.onerror=null; this.style.visibility='hidden';">
+                    </div>
+                    <div class="col-score">${p.resultat}</div>
+                    <div class="col-equipo visitante">
+                        <img src="${escVis}" onerror="this.onerror=null; this.style.visibility='hidden';">
+                        <span>${p.equip_visitant.nom}</span>
+                    </div>
+                    <div class="col-status">FINALIZADO</div>`;
+                tabla.appendChild(fila);
+            });
+            contenedorPartido.appendChild(tabla);
         });
-        contenedorPartido.appendChild(tabla);
-    });
 }
 
 // ==========================================
@@ -116,9 +122,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const selectEquipo = document.getElementById('equipo');
     if (selectEquipo) {
-        const equiposList = ["FC Barcelona", "Real Madrid CF", "Atletico de Madrid", "Sevilla FC", "Real Sociedad", "Real Betis", "Athletic Club", "Villarreal CF", "Valencia CF", "Girona FC", "RCD Espanyol", "Rayo Vallecano"];
+        const lista = ["FC Barcelona", "Real Madrid CF", "Atletico de Madrid", "Sevilla FC", "Real Sociedad", "Real Betis", "Athletic Club", "Villarreal CF", "Valencia CF", "Girona FC", "RCD Espanyol", "Rayo Vallecano"];
         selectEquipo.innerHTML = '<option value="" disabled selected>Selecciona un equipo</option>';
-        equiposList.forEach(e => {
+        lista.forEach(e => {
             const opt = document.createElement('option');
             opt.value = e; opt.textContent = e;
             selectEquipo.appendChild(opt);
