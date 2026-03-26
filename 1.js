@@ -34,12 +34,16 @@ if (contenedorEquipos) {
                     `<tr><td>${j.dorsal}</td><td>${j.nomPersona}</td><td>${j.posicio}</td><td class="calidad">${j.qualitat}</td></tr>`
                 ).join('');
 
-                // Se elimina defecto.png y se usa style.display='none' si hay error
+                // SOLUCIÓN: Si falla la imagen, "this.remove()" elimina la etiqueta <img> para detener el bucle.
                 card.innerHTML = `
                     <div class="info-principal">
-                        <img class="escudo-equipo" src="./escudos/${equipo.equip}.png" onerror="this.onerror=null;this.style.display='none';">
+                        <img class="escudo-equipo" 
+                             src="./escudos/${equipo.equip}.png" 
+                             onerror="this.onerror=null; this.remove();">
                         <h2 class="nombre-equipo">${equipo.equip}</h2>
-                        <img class="foto-dt" src="./entrenadores/${equipo.entrenador.nomPersona}.png" onerror="this.onerror=null;this.style.display='none';">
+                        <img class="foto-dt" 
+                             src="./entrenadores/${equipo.entrenador.nomPersona}.png" 
+                             onerror="this.onerror=null; this.remove();">
                         <p>DT: ${equipo.entrenador.nomPersona}</p>
                     </div>
                     <div class="tabla-oculta">
@@ -75,7 +79,7 @@ if (contenedorPartido) {
                 const fecha = fObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
                 const hora = fObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
-                // Se usa opacity='0' para mantener el hueco pero quitar el icono de error
+                // SOLUCIÓN: Usamos this.style.visibility='hidden' para mantener el diseño pero quitar el error.
                 fila.innerHTML = `
                     <div class="col-info">
                         <span class="fecha">${fecha}</span>
@@ -83,11 +87,13 @@ if (contenedorPartido) {
                     </div>
                     <div class="col-equipo local">
                         <span>${p.equip_local.nom}</span>
-                        <img src="./escudos/${p.equip_local.nom}.png" onerror="this.onerror=null;this.style.opacity='0';">
+                        <img src="./escudos/${p.equip_local.nom}.png" 
+                             onerror="this.onerror=null; this.style.visibility='hidden';">
                     </div>
                     <div class="col-score">${p.resultat}</div>
                     <div class="col-equipo visitante">
-                        <img src="./escudos/${p.equip_visitant.nom}.png" onerror="this.onerror=null;this.style.opacity='0';">
+                        <img src="./escudos/${p.equip_visitant.nom}.png" 
+                             onerror="this.onerror=null; this.style.visibility='hidden';">
                         <span>${p.equip_visitant.nom}</span>
                     </div>
                     <div class="col-status">FINALIZADO</div>`;
@@ -102,8 +108,6 @@ if (contenedorPartido) {
 // 4. LÓGICA DEL FORMULARIO
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    
-    // --- A. Mostrar/Ocultar Posición ---
     const selectTipo = document.getElementById('tipo');
     const contenedorPosicion = document.getElementById('contenedor-posicion');
     if (selectTipo && contenedorPosicion) {
@@ -116,7 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- B. Generar Desplegable de Equipos ---
     const selectEquipo = document.getElementById('equipo');
     const equiposList = [
         "FC Barcelona", "Real Madrid CF", "Atletico de Madrid", 
@@ -134,7 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- C. Previsualización de Fotografía ---
     const inputFoto = document.getElementById('foto');
     const previewContainer = document.getElementById('preview-container');
     const previewImg = document.getElementById('foto-preview');
