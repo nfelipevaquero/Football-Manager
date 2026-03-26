@@ -12,7 +12,18 @@ fetch('footer.html').then(res => res.text()).then(data => {
 }).catch(e => console.error('Error footer:', e));
 
 // ==========================================
-// 2. CARGAR EQUIPOS Y ENTRENADORES
+// FUNCIÓN PARA LIMPIAR RUTAS DE ESCUDOS
+// GitHub prefiere nombres sin espacios ni tildes
+// ==========================================
+function normalizarRutaEscudo(nombre) {
+    return nombre.toUpperCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // Quita tildes
+        .replace(/\s+/g, '%20');         // Mantiene el espacio codificado correctamente
+}
+
+// ==========================================
+// 2. CARGAR EQUIPOS Y ENTRENADORES (consulta.html)
 // ==========================================
 const contenedorEquipos = document.getElementById('lista-equipos');
 if (contenedorEquipos) {
@@ -26,18 +37,19 @@ if (contenedorEquipos) {
                 `<tr><td>${j.dorsal}</td><td>${j.nomPersona}</td><td>${j.posicio}</td><td class="calidad">${j.qualitat}</td></tr>`
             ).join('');
 
-            // FORZAMOS MAYÚSCULAS Y QUITAMOS TILDES PARA LA URL
-            const nombreLimpio = equipo.equip.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            const rutaEscudo = `./escudos/${nombreLimpio}.PNG`;
+            // Escudos: En mayúsculas y normalizados
+            const rutaEscudo = `./escudos/${normalizarRutaEscudo(equipo.equip)}.PNG`;
+            // Entrenadores: Ruta original (sin forzar mayúsculas)
+            const rutaDT = `./entrenadores/${equipo.entrenador.nomPersona}.png`;
 
             card.innerHTML = `
                 <div class="info-principal">
                     <img class="escudo-equipo" 
                          src="${rutaEscudo}" 
-                         onerror="console.log('Fallo escudo: ' + this.src); this.onerror=null; this.style.display='none';">
+                         onerror="this.onerror=null; this.style.display='none';">
                     <h2 class="nombre-equipo">${equipo.equip}</h2>
                     <img class="foto-dt" 
-                         src="./entrenadores/${equipo.entrenador.nomPersona.toUpperCase()}.PNG" 
+                         src="${rutaDT}" 
                          onerror="this.onerror=null; this.style.display='none';">
                     <p>DT: ${equipo.entrenador.nomPersona}</p>
                 </div>
@@ -53,7 +65,7 @@ if (contenedorEquipos) {
 }
 
 // ==========================================
-// 3. CARGAR RESULTADOS
+// 3. CARGAR RESULTADOS DE PARTIDOS (resultat.html)
 // ==========================================
 const contenedorPartido = document.getElementById('contenedor-partidos');
 if (contenedorPartido) {
@@ -69,18 +81,18 @@ if (contenedorPartido) {
             const fecha = fObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
             const hora = fObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
-            const localMayus = p.equip_local.nom.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            const visMayus = p.equip_visitant.nom.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const escLocal = `./escudos/${normalizarRutaEscudo(p.equip_local.nom)}.PNG`;
+            const escVis = `./escudos/${normalizarRutaEscudo(p.equip_visitant.nom)}.PNG`;
 
             fila.innerHTML = `
                 <div class="col-info"><span class="fecha">${fecha}</span><span class="hora">${hora}</span></div>
                 <div class="col-equipo local">
                     <span>${p.equip_local.nom}</span>
-                    <img src="./escudos/${localMayus}.PNG" onerror="this.onerror=null; this.style.visibility='hidden';">
+                    <img src="${escLocal}" onerror="this.onerror=null; this.style.visibility='hidden';">
                 </div>
                 <div class="col-score">${p.resultat}</div>
                 <div class="col-equipo visitante">
-                    <img src="./escudos/${visMayus}.PNG" onerror="this.onerror=null; this.style.visibility='hidden';">
+                    <img src="${escVis}" onerror="this.onerror=null; this.style.visibility='hidden';">
                     <span>${p.equip_visitant.nom}</span>
                 </div>
                 <div class="col-status">FINALIZADO</div>`;
@@ -89,3 +101,27 @@ if (contenedorPartido) {
         contenedorPartido.appendChild(tabla);
     });
 }
+
+// ==========================================
+// 4. LÓGICA DEL FORMULARIO
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const selectTipo = document.getElementById('tipo');
+    const contenedorPosicion = document.getElementById('contenedor-posicion');
+    if (selectTipo && contenedorPosicion) {
+        selectTipo.addEventListener('change', function() {
+            this.value === 'Jugador' ? contenedorPosicion.classList.remove('ocultar') : contenedorPosicion.classList.add('ocultar');
+        });
+    }
+
+    const selectEquipo = document.getElementById('equipo');
+    if (selectEquipo) {
+        const equiposList = ["FC Barcelona", "Real Madrid CF", "Atletico de Madrid", "Sevilla FC", "Real Sociedad", "Real Betis", "Athletic Club", "Villarreal CF", "Valencia CF", "Girona FC", "RCD Espanyol", "Rayo Vallecano"];
+        selectEquipo.innerHTML = '<option value="" disabled selected>Selecciona un equipo</option>';
+        equiposList.forEach(e => {
+            const opt = document.createElement('option');
+            opt.value = e; opt.textContent = e;
+            selectEquipo.appendChild(opt);
+        });
+    }
+});
