@@ -26,19 +26,19 @@ if (contenedorEquipos) {
                 `<tr><td>${j.dorsal}</td><td>${j.nomPersona}</td><td>${j.posicio}</td><td class="calidad">${j.qualitat}</td></tr>`
             ).join('');
 
-            // Aseguramos que la ruta sea relativa correcta para GitHub Pages
-            const rutaEscudo = `escudos/${equipo.equip}.png`;
-            const rutaDT = `entrenadores/${equipo.entrenador.nomPersona}.png`;
+            // Mantenemos la ruta relativa ./escudos/ y el nombre exacto con sus mayúsculas
+            const rutaEscudo = `./escudos/${equipo.equip}.png`;
+            const rutaDT = `./entrenadores/${equipo.entrenador.nomPersona}.png`;
 
             card.innerHTML = `
                 <div class="info-principal">
                     <img class="escudo-equipo" 
                          src="${rutaEscudo}" 
-                         onerror="console.warn('Escudo no encontrado:', this.src); this.remove();">
+                         onerror="this.onerror=null; this.style.display='none';">
                     <h2 class="nombre-equipo">${equipo.equip}</h2>
                     <img class="foto-dt" 
                          src="${rutaDT}" 
-                         onerror="this.remove();">
+                         onerror="this.onerror=null; this.style.display='none';">
                     <p>DT: ${equipo.entrenador.nomPersona}</p>
                 </div>
                 <div class="tabla-oculta">
@@ -71,9 +71,6 @@ if (contenedorPartido) {
             const fecha = fObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
             const hora = fObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
-            const rutaLocal = `escudos/${p.equip_local.nom}.png`;
-            const rutaVisitante = `escudos/${p.equip_visitant.nom}.png`;
-
             fila.innerHTML = `
                 <div class="col-info">
                     <span class="fecha">${fecha}</span>
@@ -81,11 +78,13 @@ if (contenedorPartido) {
                 </div>
                 <div class="col-equipo local">
                     <span>${p.equip_local.nom}</span>
-                    <img src="${rutaLocal}" onerror="this.onerror=null; this.style.visibility='hidden';">
+                    <img src="./escudos/${p.equip_local.nom}.png" 
+                         onerror="this.onerror=null; this.style.visibility='hidden';">
                 </div>
                 <div class="col-score">${p.resultat}</div>
                 <div class="col-equipo visitante">
-                    <img src="${rutaVisitante}" onerror="this.onerror=null; this.style.visibility='hidden';">
+                    <img src="./escudos/${p.equip_visitant.nom}.png" 
+                         onerror="this.onerror=null; this.style.visibility='hidden';">
                     <span>${p.equip_visitant.nom}</span>
                 </div>
                 <div class="col-status">FINALIZADO</div>`;
