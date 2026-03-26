@@ -1,18 +1,18 @@
 // ==========================================
 // 1. CARGAR HEADER Y FOOTER
 // ==========================================
-fetch('header.html').then(res => res.text()).then(data => { 
-    const h = document.getElementById('main-header'); 
-    if (h) h.innerHTML = data; 
-}).catch(e => console.error('Error header:', e));
+const cargar = (id, url) => {
+    fetch(url).then(res => res.text()).then(html => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = html;
+    }).catch(err => console.error("Error cargando " + url, err));
+};
 
-fetch('footer.html').then(res => res.text()).then(data => { 
-    const f = document.getElementById('main-footer'); 
-    if (f) f.innerHTML = data; 
-}).catch(e => console.error('Error footer:', e));
+cargar('main-header', 'header.html');
+cargar('main-footer', 'footer.html');
 
 // ==========================================
-// 2. CARGAR EQUIPOS Y ENTRENADORES (consulta.html)
+// 2. CARGAR EQUIPOS Y ENTRENADORES
 // ==========================================
 const contenedorEquipos = document.getElementById('lista-equipos');
 if (contenedorEquipos) {
@@ -22,40 +22,34 @@ if (contenedorEquipos) {
             const claseEquipo = equipo.equip.toLowerCase().replace(/\s+/g, '-');
             card.className = `card-equipo has-gradient ${claseEquipo}`;
             
-            let filasJugadores = equipo.jugadors.map(j => 
+            let filas = equipo.jugadors.map(j => 
                 `<tr><td>${j.dorsal}</td><td>${j.nomPersona}</td><td>${j.posicio}</td><td class="calidad">${j.qualitat}</td></tr>`
             ).join('');
 
-            // Mantenemos la ruta relativa ./escudos/ y el nombre exacto con sus mayúsculas
-            const rutaEscudo = `./escudos/${equipo.equip}.png`;
-            const rutaDT = `./entrenadores/${equipo.entrenador.nomPersona}.png`;
+            // PROBAMOS RUTA RELATIVA DIRECTA (Sin el punto inicial)
+            const nombreArchivo = equipo.equip + ".png";
+            const rutaEscudo = "escudos/" + nombreArchivo; 
 
             card.innerHTML = `
                 <div class="info-principal">
-                    <img class="escudo-equipo" 
-                         src="${rutaEscudo}" 
-                         onerror="this.onerror=null; this.style.display='none';">
+                    <img class="escudo-equipo" src="${rutaEscudo}" onerror="this.onerror=null; this.style.display='none';">
                     <h2 class="nombre-equipo">${equipo.equip}</h2>
-                    <img class="foto-dt" 
-                         src="${rutaDT}" 
-                         onerror="this.onerror=null; this.style.display='none';">
+                    <img class="foto-dt" src="entrenadores/${equipo.entrenador.nomPersona}.png" onerror="this.onerror=null; this.style.display='none';">
                     <p>DT: ${equipo.entrenador.nomPersona}</p>
                 </div>
                 <div class="tabla-oculta">
                     <table>
-                        <thead>
-                            <tr><th>#</th><th>Nombre</th><th>Pos.</th><th>Val.</th></tr>
-                        </thead>
-                        <tbody>${filasJugadores}</tbody>
+                        <thead><tr><th>#</th><th>Nombre</th><th>Pos.</th><th>Val.</th></tr></thead>
+                        <tbody>${filas}</tbody>
                     </table>
                 </div>`;
             contenedorEquipos.appendChild(card);
         });
-    }).catch(err => console.error("Error equipos:", err));
+    });
 }
 
 // ==========================================
-// 3. CARGAR RESULTADOS DE PARTIDOS (resultat.html)
+// 3. CARGAR RESULTADOS
 // ==========================================
 const contenedorPartido = document.getElementById('contenedor-partidos');
 if (contenedorPartido) {
@@ -72,26 +66,21 @@ if (contenedorPartido) {
             const hora = fObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
             fila.innerHTML = `
-                <div class="col-info">
-                    <span class="fecha">${fecha}</span>
-                    <span class="hora">${hora}</span>
-                </div>
+                <div class="col-info"><span class="fecha">${fecha}</span><span class="hora">${hora}</span></div>
                 <div class="col-equipo local">
                     <span>${p.equip_local.nom}</span>
-                    <img src="./escudos/${p.equip_local.nom}.png" 
-                         onerror="this.onerror=null; this.style.visibility='hidden';">
+                    <img src="escudos/${p.equip_local.nom}.png" onerror="this.onerror=null; this.style.visibility='hidden';">
                 </div>
                 <div class="col-score">${p.resultat}</div>
                 <div class="col-equipo visitante">
-                    <img src="./escudos/${p.equip_visitant.nom}.png" 
-                         onerror="this.onerror=null; this.style.visibility='hidden';">
+                    <img src="escudos/${p.equip_visitant.nom}.png" onerror="this.onerror=null; this.style.visibility='hidden';">
                     <span>${p.equip_visitant.nom}</span>
                 </div>
                 <div class="col-status">FINALIZADO</div>`;
             tabla.appendChild(fila);
         });
         contenedorPartido.appendChild(tabla);
-    }).catch(err => console.error("Error partidos:", err));
+    });
 }
 
 // ==========================================
@@ -102,46 +91,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const contenedorPosicion = document.getElementById('contenedor-posicion');
     if (selectTipo && contenedorPosicion) {
         selectTipo.addEventListener('change', function() {
-            if (this.value === 'Jugador') {
-                contenedorPosicion.classList.remove('ocultar');
-            } else {
-                contenedorPosicion.classList.add('ocultar');
-            }
+            this.value === 'Jugador' ? contenedorPosicion.classList.remove('ocultar') : contenedorPosicion.classList.add('ocultar');
         });
     }
 
     const selectEquipo = document.getElementById('equipo');
-    const equiposList = [
-        "FC Barcelona", "Real Madrid CF", "Atletico de Madrid", 
-        "Sevilla FC", "Real Sociedad", "Real Betis", 
-        "Athletic Club", "Villarreal CF", "Valencia CF", 
-        "Girona FC", "RCD Espanyol", "Rayo Vallecano"
-    ];
     if (selectEquipo) {
+        const equiposList = ["FC Barcelona", "Real Madrid CF", "Atletico de Madrid", "Sevilla FC", "Real Sociedad", "Real Betis", "Athletic Club", "Villarreal CF", "Valencia CF", "Girona FC", "RCD Espanyol", "Rayo Vallecano"];
         selectEquipo.innerHTML = '<option value="" disabled selected>Selecciona un equipo</option>';
         equiposList.forEach(e => {
             const opt = document.createElement('option');
-            opt.value = e;
-            opt.textContent = e;
+            opt.value = e; opt.textContent = e;
             selectEquipo.appendChild(opt);
-        });
-    }
-
-    const inputFoto = document.getElementById('foto');
-    const previewContainer = document.getElementById('preview-container');
-    const previewImg = document.getElementById('foto-preview');
-
-    if (inputFoto && previewImg) {
-        inputFoto.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    previewImg.src = event.target.result;
-                    if(previewContainer) previewContainer.classList.remove('ocultar');
-                }
-                reader.readAsDataURL(file);
-            }
         });
     }
 });
